@@ -16,16 +16,14 @@ import com.qualcomm.robotcore.util.Range;
 // Also try to do another version of this code and we'll test it to see which one we should use
 
 class Claw_Mac {
-    public DcMotor LMY1 = null;
-    public DcMotor LMY2 = null;
-    public DcMotor RMY1 = null;
-    public DcMotor RMY2 = null;
+    public DcMotor LMY = null;
+    public DcMotor RMY = null;
     public DcMotor Sliderx = null;
     public DcMotor Vertical = null;
     public Servo LServo = null;
     public Servo RServo = null;
 
-    public static double Claw_Home = 0.0;
+    public static double Claw_Home = 0.45;
     public static double Claw_Max = 0.45;
     public static double Claw_Min = 0.0;
 
@@ -33,35 +31,27 @@ class Claw_Mac {
 
     public void init(HardwareMap maps){
         map = maps;
-        LMY1 = maps.get(DcMotor.class, "lmy1");
-        LMY2 = maps.dcMotor.get("lmy2");
-        RMY1 = maps.dcMotor.get("rmy1");
-        RMY2 = maps.dcMotor.get("rmy2");
+        LMY = maps.get(DcMotor.class, "lmy1");
+        RMY = maps.dcMotor.get("rmy1");
         Sliderx = maps.dcMotor.get("slider");
         Vertical = maps.dcMotor.get("vertical");
         LServo = maps.servo.get("lservo");
         RServo = maps.servo.get("rservo");
 
-        LMY1.setDirection(DcMotorSimple.Direction.FORWARD);
-        LMY2.setDirection(DcMotorSimple.Direction.FORWARD);
-        RMY1.setDirection(DcMotorSimple.Direction.REVERSE);
-        RMY2.setDirection(DcMotorSimple.Direction.REVERSE);
+        LMY.setDirection(DcMotorSimple.Direction.FORWARD);
+        RMY.setDirection(DcMotorSimple.Direction.FORWARD);
         Sliderx.setDirection(DcMotorSimple.Direction.FORWARD);
         Vertical.setDirection(DcMotorSimple.Direction.FORWARD);
 
-        LMY1.setPower(0.0);
-        LMY2.setPower(0.0);
-        RMY1.setPower(0.0);
-        RMY2.setPower(0.0);
+        LMY.setPower(0.0);
+        RMY.setPower(0.0);
         Sliderx.setPower(0.0);
         Vertical.setPower(0.0);
         LServo.setPosition(Claw_Home);
         RServo.setPosition(Claw_Home);
 
-        LMY1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        LMY2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        RMY1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        RMY2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Sliderx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         Vertical.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -73,12 +63,12 @@ class Claw_Mac {
 
 public class Claw_Machine extends LinearOpMode{
     Claw_Mac robot = new Claw_Mac();
-    double y = gamepad1.left_stick_y;
-    double x = gamepad1.left_stick_x;
+    double y;
+    double x;
     double ver_pos = 0.0;
     double claw_pos = robot.Claw_Home;
-    final double motor_speed = 0.2;
-    final double claw_speed = 0.05;
+    final double vmos = 1;
+    final double claw_speed = 0.15;
 
 
     @Override
@@ -87,32 +77,35 @@ public class Claw_Machine extends LinearOpMode{
         telemetry.addData("Say", "Hello");
         telemetry.update();
 
+
         waitForStart();
 
         while(opModeIsActive()){
+            y = -gamepad1.left_stick_y;
+            x = gamepad1.left_stick_x;
             claw_pos = Range.clip(claw_pos,0.0,0.45);
 
             if (gamepad1.a && claw_pos == 0.0){
-                robot.LServo.setPosition(claw_pos += claw_speed);
-                robot.RServo.setPosition(claw_pos += claw_speed);
+                claw_pos += 0.45;
             }
-            else if (gamepad1.a && claw_pos == 0.45){
-                robot.LServo.setPosition(claw_pos -= claw_speed);
-                robot.RServo.setPosition(claw_pos -= claw_speed);
-            }
+            else if (gamepad1.a && claw_pos != 0.45)
+                claw_pos -= claw_speed;
+            else if (ver_pos != 0)
+                ver_pos = 0;
             else if (gamepad1.right_bumper)
-                robot.Vertical.setPower(ver_pos = motor_speed);
+                ver_pos += vmos;
             else if (gamepad1.left_bumper)
-                robot.Vertical.setPower(ver_pos = -motor_speed);
-            else if (gamepad1.right_bumper && ver_pos != 0)
-                robot.Vertical.setPower(0.0);
+                ver_pos += -vmos;
             else{
-                robot.LMY1.setPower(y/5);
-                robot.LMY2.setPower(y/5);
-                robot.RMY1.setPower(-y/5);
-                robot.RMY2.setPower(-y/5);
-                robot.Sliderx.setPower(x/2);
+                robot.LMY.setPower(y/3);
+                robot.RMY.setPower(-y/3);
+                robot.Sliderx.setPower(x/3);
             }
+
+            robot.Vertical.setPower(ver_pos);
+            robot.LServo.setPosition(claw_pos);
+            robot.RServo.setPosition(claw_pos);
+
             telemetry.addData("y", "%.2f",y);
             telemetry.addData("x","%.2f",x);
             telemetry.addData("Vertical_position","%.2f",ver_pos);
