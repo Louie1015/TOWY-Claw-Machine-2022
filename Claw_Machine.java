@@ -11,9 +11,7 @@ import com.qualcomm.robotcore.util.Range;
 //Verson 1 of Claw_Machine
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// We'll probably decide to do encoders
-// We also might us a raspberry pie I think
-// Also try to do another version of this code and we'll test it to see which one we should use
+//How do we make a function that does everything that a claw machine does expect for moving around
 
 class Claw_Mac {
     public DcMotor LMY = null;
@@ -47,8 +45,8 @@ class Claw_Mac {
         RMY.setPower(0.0);
         Sliderx.setPower(0.0);
         Vertical.setPower(0.0);
-        LServo.setPosition(Claw_Home);
-        RServo.setPosition(Claw_Home);
+        LServo.setPosition(Claw_Home + 0.05);
+        RServo.setPosition(-Claw_Home - 0.5);
 
         LMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -66,9 +64,10 @@ public class Claw_Machine extends LinearOpMode{
     double y;
     double x;
     double ver_pos = 0.0;
-    double claw_pos = robot.Claw_Home;
+    double claw_posl = robot.Claw_Home;
+    double claw_posr = robot.Claw_Home;
     final double vmos = 1;
-    final double claw_speed = 0.15;
+    final double claw_speed = 0.45;
 
 
     @Override
@@ -83,13 +82,18 @@ public class Claw_Machine extends LinearOpMode{
         while(opModeIsActive()){
             y = -gamepad1.left_stick_y;
             x = gamepad1.left_stick_x;
-            claw_pos = Range.clip(claw_pos,0.0,0.45);
+            claw_posr = Range.clip(claw_posr,0.30,0.70);
+            claw_posl = Range.clip(claw_posl,0,0.30);
 
-            if (gamepad1.a && claw_pos == 0.0){
-                claw_pos += 0.45;
+            // We need to make the servos continuous
+            if (gamepad1.a){
+                claw_posr += claw_speed;
+                claw_posl -= claw_speed;
             }
-            else if (gamepad1.a && claw_pos != 0.45)
-                claw_pos -= claw_speed;
+            else if (gamepad1.b) {
+                claw_posr -= claw_speed;
+                claw_posl += claw_speed;
+            }
             else if (ver_pos != 0)
                 ver_pos = 0;
             else if (gamepad1.right_bumper)
@@ -99,17 +103,18 @@ public class Claw_Machine extends LinearOpMode{
             else{
                 robot.LMY.setPower(y/3);
                 robot.RMY.setPower(-y/3);
-                robot.Sliderx.setPower(x/3);
+                robot.Sliderx.setPower(x/2);
             }
 
             robot.Vertical.setPower(ver_pos);
-            robot.LServo.setPosition(claw_pos);
-            robot.RServo.setPosition(claw_pos);
+            robot.LServo.setPosition(claw_posl);
+            robot.RServo.setPosition(claw_posr);
 
             telemetry.addData("y", "%.2f",y);
             telemetry.addData("x","%.2f",x);
             telemetry.addData("Vertical_position","%.2f",ver_pos);
-            telemetry.addData("Claw_position","%.2f",claw_pos);
+            telemetry.addData("Claw_position_R","%.2f",claw_posr);
+            telemetry.addData("Claw_position_L","%.2f",claw_posl);
             telemetry.update();
 
             sleep(50);
