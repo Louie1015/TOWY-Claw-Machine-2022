@@ -21,9 +21,8 @@ class Claw_Mac {
     public Servo LServo = null;
     public Servo RServo = null;
 
-    public static double Claw_Home = 0.45;
-    public static double Claw_Max = 0.45;
-    public static double Claw_Min = 0.0;
+    public static double Claw_HomeL = 0.30;
+    public static double Claw_HomeR = 0.30;
 
     HardwareMap map = null;
 
@@ -37,7 +36,7 @@ class Claw_Mac {
         RServo = maps.servo.get("rservo");
 
         LMY.setDirection(DcMotorSimple.Direction.FORWARD);
-        RMY.setDirection(DcMotorSimple.Direction.FORWARD);
+        RMY.setDirection(DcMotorSimple.Direction.REVERSE);
         Sliderx.setDirection(DcMotorSimple.Direction.FORWARD);
         Vertical.setDirection(DcMotorSimple.Direction.FORWARD);
 
@@ -45,8 +44,8 @@ class Claw_Mac {
         RMY.setPower(0.0);
         Sliderx.setPower(0.0);
         Vertical.setPower(0.0);
-        LServo.setPosition(Claw_Home + 0.05);
-        RServo.setPosition(-Claw_Home - 0.5);
+        LServo.setPosition(Claw_HomeL);
+        RServo.setPosition(Claw_HomeR);
 
         LMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -64,9 +63,9 @@ public class Claw_Machine extends LinearOpMode{
     double y;
     double x;
     double ver_pos = 0.0;
-    double claw_posl = robot.Claw_Home;
-    double claw_posr = robot.Claw_Home;
-    final double vmos = 1;
+    double claw_posl = robot.Claw_HomeL;
+    double claw_posr = robot.Claw_HomeR;
+    final double vmos = 0.5;
     final double claw_speed = 0.45;
 
 
@@ -102,7 +101,7 @@ public class Claw_Machine extends LinearOpMode{
                 ver_pos += -vmos;
             else{
                 robot.LMY.setPower(y/3);
-                robot.RMY.setPower(-y/3);
+                robot.RMY.setPower(y/3);
                 robot.Sliderx.setPower(x/2);
             }
 
