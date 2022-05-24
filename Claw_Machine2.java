@@ -24,7 +24,6 @@ class Claw_Mac2 {
     public Servo RServo = null;
     public DigitalChannel front;
     public DigitalChannel back;
-    public DigitalChannel left;
 
     public static double Claw_HomeL = 0.30;
     public static double Claw_HomeR = 0.30;
@@ -39,14 +38,13 @@ class Claw_Mac2 {
         Vertical = maps.dcMotor.get("vertical");
         LServo = maps.servo.get("lservo");
         RServo = maps.servo.get("rservo");
-        front = maps.get(DigitalChannel.class, "front_switch");
-        back = maps.digitalChannel.get("back_switch");
-        left = maps.digitalChannel.get("left_switch");
+        front = maps.digitalChannel.get("front");
+        back = maps.digitalChannel.get("back");
 
         LMY.setDirection(DcMotorSimple.Direction.FORWARD);
         RMY.setDirection(DcMotorSimple.Direction.REVERSE);
         Sliderx.setDirection(DcMotorSimple.Direction.FORWARD);
-        Vertical.setDirection(DcMotorSimple.Direction.FORWARD);
+        Vertical.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         LMY.setPower(0.0);
@@ -58,11 +56,10 @@ class Claw_Mac2 {
 
         LMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         RMY.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        Sliderx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        Sliderx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Vertical.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         front.setMode(DigitalChannel.Mode.INPUT);
         back.setMode(DigitalChannel.Mode.INPUT);
-        left.setMode(DigitalChannel.Mode.INPUT);
 
 
     }
@@ -82,8 +79,8 @@ public class Claw_Machine2 extends LinearOpMode{
 
     public void final_claw(){
         robot.Vertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.Vertical.setTargetPosition(3500);
-        robot.Vertical.setPower(1.0);
+        robot.Vertical.setTargetPosition(3400);
+        robot.Vertical.setPower(0.5);
         robot.Vertical.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while(robot.Vertical.isBusy()){
@@ -95,52 +92,32 @@ public class Claw_Machine2 extends LinearOpMode{
         claw_posl = 0.0;
         claw_posr = 0.70;
 
-        robot.LServo.setPosition(claw_posl);
-        robot.RServo.setPosition(claw_posr);
+        robot.LServo.setPosition(0.0);
+        robot.RServo.setPosition(0.70);
         sleep(1500);
 
         robot.Vertical.setTargetPosition(0);
-        robot.Vertical.setPower(-1.0);
+        robot.Vertical.setPower(-0.5);
 
         while(robot.Vertical.isBusy()){
             telemetry.addData("Vertical is running",0);
             telemetry.update();
         }
 
-        if ((robot.front.getState() == true) && (robot.left.getState() == true)){
+        robot.Sliderx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.Sliderx.setTargetPosition(0);
+        robot.Sliderx.setPower(-0.5);
+        robot.Sliderx.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+
+        if (robot.front.getState() == true){
             robot.LMY.setPower(1.0);
             robot.RMY.setPower(1.0);
-            robot.Sliderx.setPower(1.0);
-        }
-        else if ((robot.front.getState() == true) && (robot.left.getState() == false)){
-            robot.Sliderx.setPower(0.0);
-            robot.LMY.setPower(1.0);
-            robot.RMY.setPower(1.0);
-        }
-        else if ((robot.front.getState() == false) && (robot.left.getState() == true)){
-            robot.Sliderx.setPower(1.0);
-            robot.LMY.setPower(0.0);
-            robot.RMY.setPower(0.0);
         }
         else{
             robot.RMY.setPower(0.0);
             robot.LMY.setPower(0.0);
-            robot.Sliderx.setPower(0.0);
         }
-/*
-        robot.Sliderx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.Sliderx.setTargetPosition(1);
-        robot.Sliderx.setPower(-0.5);
-        robot.Sliderx.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.RMY.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.RMY.setTargetPosition(0);
-        robot.RMY.setPower(0.5);
-        robot.RMY.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        robot.LMY.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.LMY.setTargetPosition(0);
-        robot.LMY.setPower(0.5);
-        robot.LMY.setMode(DcMotor.RunMode.RUN_TO_POSITION);
- */
 
         while(robot.Sliderx.isBusy() || robot.RMY.isBusy() || robot.LMY.isBusy()){
             telemetry.addData("Movement is happening",0);
@@ -153,8 +130,8 @@ public class Claw_Machine2 extends LinearOpMode{
         claw_posl = 0.30;
         claw_posr = 0.30;
 
-        robot.RServo.setPosition(claw_posr);
-        robot.LServo.setPosition(claw_posl);
+        robot.RServo.setPosition(0.30);
+        robot.LServo.setPosition(0.30);
         sleep(1500);
     }
 
@@ -190,9 +167,6 @@ public class Claw_Machine2 extends LinearOpMode{
             telemetry.addData("x","%.2f",x);
             telemetry.addData("Claw_position_R","%.2f",claw_posr);
             telemetry.addData("Claw_position_L","%.2f",claw_posl);
-            telemetry.addData("Front_Switch","%.2f",!robot.front.getState());
-            telemetry.addData("Back_Switch","%.2f",!robot.back.getState());
-            telemetry.addData("Left_Switch","%.2f",!robot.left.getState());
             telemetry.update();
 
             sleep(50);
