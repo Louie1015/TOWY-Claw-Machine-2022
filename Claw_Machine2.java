@@ -10,10 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
-//Verson 1 of Claw_Machine
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//How do we make a function that does everything that a claw machine does expect for moving around
 
 class Claw_Mac2 {
     public DcMotor LMY = null;
@@ -61,6 +58,7 @@ class Claw_Mac2 {
         front.setMode(DigitalChannel.Mode.INPUT);
         back.setMode(DigitalChannel.Mode.INPUT);
 
+        Sliderx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
     }
 }
@@ -79,7 +77,8 @@ public class Claw_Machine2 extends LinearOpMode{
 
     public void final_claw(){
         robot.Vertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.Vertical.setTargetPosition(3400);
+        int new_pos = robot.Vertical.getTargetPosition() + 3400;
+        robot.Vertical.setTargetPosition(new_pos);
         robot.Vertical.setPower(0.5);
         robot.Vertical.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
@@ -96,17 +95,20 @@ public class Claw_Machine2 extends LinearOpMode{
         robot.RServo.setPosition(0.70);
         sleep(1500);
 
-        robot.Vertical.setTargetPosition(0);
-        robot.Vertical.setPower(-0.5);
+        robot.Vertical.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        new_pos = robot.Vertical.getTargetPosition() - 3400;
+        robot.Vertical.setTargetPosition(new_pos);
+        robot.Vertical.setPower(0.5);
+        robot.Vertical.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         while(robot.Vertical.isBusy()){
             telemetry.addData("Vertical is running",0);
             telemetry.update();
         }
 
-        robot.Sliderx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.Sliderx.setTargetPosition(0);
-        robot.Sliderx.setPower(-0.5);
+        int new_pos2 = robot.Sliderx.getTargetPosition() + 0;
+        robot.Sliderx.setTargetPosition(new_pos2);
+        robot.Sliderx.setPower(0.5);
         robot.Sliderx.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
 
